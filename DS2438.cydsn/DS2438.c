@@ -258,7 +258,7 @@ DS2438_ErrorCode DS2438_GetVoltageData(float* voltage)
     return DS2438_DEV_NOT_FOUND;
 }
 
-DS2438_ErrorCode DS2438_GetCurrent(float* current)
+DS2438_ErrorCode DS2438_GetCurrentData(float* current)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)

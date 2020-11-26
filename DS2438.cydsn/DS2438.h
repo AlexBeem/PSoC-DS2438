@@ -16,16 +16,22 @@
     #include "cytypes.h"
     #include "OneWire.h"
     
+    /**
+    *   \brief Error codes returned by DS2438 functions.
+    */
     typedef enum {
-        DS2438_OK,
-        DS2438_DEV_NOT_FOUND,
-        DS2438_CRC_FAIL,
-        DS2438_ERROR
+        DS2438_OK,              ///<  No error generated
+        DS2438_DEV_NOT_FOUND,   ///<  Device not found on the 1-Wire bus
+        DS2438_CRC_FAIL,        ///<  CRC Check Failed
+        DS2438_ERROR            ///<  Generic error
     } DS2438_ErrorCode;
     
+    /**
+    *   \brief Flags to enable/disable CRC checks.
+    */
     typedef enum {
-        DS2438_CRC_CHECK,
-        DS2438_NO_CRC_CHECK
+        DS2438_CRC_CHECK,       ///< Perform CRC Check
+        DS2438_NO_CRC_CHECK     ///< Skip CRC Check
     } DS2438_CrcCheck;
     
     /**
@@ -87,7 +93,6 @@
     
     DS2438_ErrorCode DS2438_EnableCA(void);
     DS2438_ErrorCode DS2438_DisableCA(void);
-    
     
     DS2438_ErrorCode DS2438_GetCurrentData(float* current);
 

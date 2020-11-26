@@ -296,7 +296,6 @@ DS2438_ErrorCode DS2438_GetCurrentData(float* current)
                 }
                 else
                 {
-                    // current is positive
                     curr_data = (curr_msb << 8) | (curr_lsb & 0xFF);
                 }
                 

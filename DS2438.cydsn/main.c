@@ -148,7 +148,7 @@ int main(void)
         }
         else
         {
-            debug_print("Could not start voltage conversion\r\n");
+            debug_print("Could not start current conversion\r\n");
         }
         CyDelay(1000);
         

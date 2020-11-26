@@ -24,6 +24,7 @@ DS2438_ErrorCode DS2438_Init(void)
 
 DS2438_ErrorCode DS2438_DevIsPresent(void)
 {
+    // check if device is present on the bus
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
     {
         return DS2438_OK;
@@ -36,6 +37,7 @@ DS2438_ErrorCode DS2438_DevIsPresent(void)
 
 DS2438_ErrorCode DS2438_ReadSerialNumber(uint8_t* serial_number, DS2438_CrcCheck check)
 {
+    // read rom and get serial number only
     uint8_t temp_rom[8];
     if (DS2438_ReadRawRom(temp_rom) == DS2438_OK)
     {
@@ -174,11 +176,9 @@ DS2438_ErrorCode DS2438_GetTemperatureData(float* temperature)
             else
             {
                 return DS2438_ERROR;
-            }
-            
+            }  
         }
     }
-    
     return DS2438_DEV_NOT_FOUND;
 }
 
@@ -245,6 +245,61 @@ DS2438_ErrorCode DS2438_GetVoltageData(float* voltage)
                 uint8_t volt_lsb = page_data[3];
                 uint8_t volt_msb = page_data[4];
                 *voltage = ((volt_msb << 8) | ((volt_lsb & 0xFF))) / 100.0;
+                return DS2438_OK;
+            }
+            else
+            {
+                return DS2438_ERROR;
+            }
+            
+        }
+    }
+    
+    return DS2438_DEV_NOT_FOUND;
+}
+
+DS2438_ErrorCode DS2438_GetCurrent(float* current)
+{
+    // Reset sequence
+    if (OneWire_TouchReset(DS2438_Pin_0) == 0)
+    {
+        // Skip ROM command 
+        OneWire_WriteByte(DS2438_Pin_0, DS2438_SKIP_ROM);
+        // Recall memory command
+        OneWire_WriteByte(DS2438_Pin_0, DS2438_RECALL_MEMORY);
+        // Page 0
+        OneWire_WriteByte(DS2438_Pin_0, 0x00);
+        if (OneWire_TouchReset(DS2438_Pin_0) == 0)
+        {
+            // Skip ROM command 
+            OneWire_WriteByte(DS2438_Pin_0, DS2438_SKIP_ROM);
+            // Read scratchpad command
+            OneWire_WriteByte(DS2438_Pin_0, DS2438_READ_SCRATCHPAD);
+            // Page 0
+            OneWire_WriteByte(DS2438_Pin_0, 0x00);
+            // Read nine bytes
+            
+            uint8_t page_data[9];
+            if (DS2438_ReadPage(0x00, page_data) == DS2438_OK)
+            {
+                uint8_t curr_lsb = page_data[5];
+                uint8_t curr_msb = page_data[6];
+                int16_t curr_data = 0;
+                // Get if positive or negative
+                if ((curr_msb & 0x03) > 1)
+                {
+                    // current is negative
+                    uint16_t data = (curr_msb<<8) | (curr_lsb);
+                    // perform 2's complement
+                    int16_t temp = (~data) & 0x3FF;
+                    curr_data = (short)(temp * -1);
+                }
+                else
+                {
+                    curr_data = (curr_msb << 8) | (curr_lsb & 0xFF);
+                }
+                
+                *current = (curr_data) / (4096.*0.05);
                 return DS2438_OK;
             }
             else
@@ -347,19 +402,16 @@ DS2438_ErrorCode DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_va
 uint8_t DS2438_ComputeCrc(const uint8_t *data, uint8_t len)
 {
     // Compute crc according to Dallas specs
-    uint8_t crc = 0xff;
-    uint8_t byteCtr;
-    for (byteCtr = 0; byteCtr < len; ++byteCtr) {
-        crc ^= data[byteCtr];
-        for (uint8_t bit = 8; bit > 0; --bit) {
-            if (crc & 0x80) {
-                crc = (crc << 1) ^ 0x31;
-            }
-            else {
-                crc = (crc << 1);
-            }
-        }
-    }
-    return crc;
+    uint8_t crc = 0;
+	while (len--) {
+		uint8_t inbyte = *data++;
+		for (uint8_t i = 8; i; i--) {
+			uint8_t mix = (crc ^ inbyte) & 0x01;
+			crc >>= 1;
+			if (mix) crc ^= 0x8C;
+			inbyte >>= 1;
+		}
+	}
+	return crc;
 }
 /* [] END OF FILE */

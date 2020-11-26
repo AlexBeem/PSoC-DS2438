@@ -138,7 +138,19 @@ int main(void)
             debug_print("Could not start voltage conversion\r\n");
         }
         CyDelay(1000);
-        
+        float current = 0;
+        if (DS2438_GetCurrent(&current) == DS2438_OK)
+        {
+            debug_print("Read current data\r\n");
+            sprintf(msg, "mAmps: %d\r\n", (int)(current*1000));
+            debug_print(msg);
+
+        }
+        else
+        {
+            debug_print("Could not get current data\r\n");
+        }
+        CyDelay(1000);
     }
 }
 

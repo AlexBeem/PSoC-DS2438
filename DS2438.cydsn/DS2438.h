@@ -16,6 +16,8 @@
     #include "cytypes.h"
     #include "OneWire.h"
     
+    #define DS2438_RSENS_RES 0.05
+    
     typedef enum {
         DS2438_OK,
         DS2438_DEV_NOT_FOUND,
@@ -27,6 +29,7 @@
         DS2438_CRC_CHECK,
         DS2438_NO_CRC_CHECK
     } DS2438_CrcCheck;
+    
     
     /**
     *   \brief Initializes the DS2438
@@ -45,6 +48,9 @@
     DS2438_ErrorCode DS2438_HasTemperatureData(void);
     DS2438_ErrorCode DS2438_GetTemperatureData(float* temperature);
     DS2438_ErrorCode DS2438_ReadTemperature(void);
+    
+    DS2438_ErrorCode DS2438_EnableCurrentMeasurement(void);
+    DS2438_ErrorCode DS2438_GetCurrent(float* current);
     
     DS2438_ErrorCode DS2438_ReadPage(uint8_t page_number, uint8_t* page_data);
     

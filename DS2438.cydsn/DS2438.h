@@ -1,5 +1,5 @@
-/* ========================================
- *
+/**
+ * \file DS2438.h
  * \brief DS2438 Library with 1-Wire interface. 
  *
  * This library allows to use the DS2438 device
@@ -54,6 +54,9 @@
     */
     DS2438_ErrorCode DS2438_DevIsPresent(void);
     
+    // ===========================================================
+    //                  64-BIT LASERED ROM FUNCTIONS
+    // ===========================================================
     /**
     *   \brief Read 64-bit lasered ROM.
     *
@@ -75,27 +78,45 @@
     *   \param rom pointer to array where raw ROM data will be saved.
     *   \retval #DS2438_OK if device is present on the bus.
     *   \retval #DS2438_DEV_NOT_FOUND if device is not present on the bus.
+    *   \retval #DS2438_CRC_FAILED if CRC check failed.
     */
     DS2438_ErrorCode DS2438_ReadSerialNumber(uint8_t* serial_number, DS2438_CrcCheck check);
+    
+    // ===========================================================
+    //                  VOLTAGE CONVERSION FUNCTIONS
+    // ===========================================================
     
     DS2438_ErrorCode DS2438_StartVoltageConversion(void);
     DS2438_ErrorCode DS2438_HasVoltageData(void);
     DS2438_ErrorCode DS2438_GetVoltageData(float* voltage);
     DS2438_ErrorCode DS2438_ReadVoltage(void);
     
+    // ===========================================================
+    //                  TEMPERATURE CONVERSION FUNCTIONS
+    // ===========================================================
+    
     DS2438_ErrorCode DS2438_StartTemperatureConversion(void);
     DS2438_ErrorCode DS2438_HasTemperatureData(void);
     DS2438_ErrorCode DS2438_GetTemperatureData(float* temperature);
     DS2438_ErrorCode DS2438_ReadTemperature(void);
     
+    // ===========================================================
+    //                  CONFIGURATION FUNCTIONS
+    // ===========================================================
     DS2438_ErrorCode DS2438_EnableIAD(void);
     DS2438_ErrorCode DS2438_DisableIAD(void);
     
     DS2438_ErrorCode DS2438_EnableCA(void);
     DS2438_ErrorCode DS2438_DisableCA(void);
     
+    // ===========================================================
+    //              CURRENT AND ACCUMULATORS FUNCTIONS
+    // ===========================================================
     DS2438_ErrorCode DS2438_GetCurrentData(float* current);
 
+    // ===========================================================
+    //                  LOW LEVEL UNCTIONS
+    // ===========================================================
     DS2438_ErrorCode DS2438_ReadPage(uint8_t page_number, uint8_t* page_data);
     
 #endif

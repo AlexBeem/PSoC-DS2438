@@ -47,7 +47,12 @@
     /**
     *   \brief Generic error.
     */
-    #define DS2438_ERROR            3       
+    #define DS2438_ERROR            3      
+    
+    /**
+    *   \brief Bad parameter error.
+    */
+    #define DS2438_BAD_PARAM        4
 
     // ===========================================================
     //                      1-WIRE COMMANDS
@@ -86,9 +91,38 @@
     */
     #define DS2438_READ_SCRATCHPAD 0xBE
     
+    /**
+    *   \brief Command to write scratchpad. 
+    */
+    #define DS2438_WRITE_SCRATCHPAD 0x4E
+    
+    /**
+    *   \brief Command to copy scratchpad. 
+    */
+    #define DS2438_COPY_SCRATCHPAD 0x48
+    
     // ===========================================================
     //                      SENSE RESISTOR
     // ===========================================================
+    
+    /**
+    *   \brief Value of sense resistor to be used for current computation.
+    */
     #define DS2438_SENSE_RESISTOR 0.05
+    
+    // ===========================================================
+    //                      VOLTAGE A/D INPUT SELECTION
+    // ===========================================================
+    
+    /**
+    *   \brief Select battery voltage (VDD) as A/D input source. 
+    */
+    #define DS2438_INPUT_VOLTAGE_VDD 0
+    
+    /**
+    *   \brief Select general purpose input as A/D input source. 
+    */
+    #define DS2438_INPUT_VOLTAGE_VAD 1
+    
 #endif
 /* [] END OF FILE */

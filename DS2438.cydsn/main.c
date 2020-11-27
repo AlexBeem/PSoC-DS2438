@@ -40,32 +40,17 @@ int main(void)
     
     if (DS2438_DevIsPresent() == DS2438_OK)
     {
-        debug_print("Device is present\r\n");
-        
-        uint8_t rom[8];
-        if (DS2438_OK == DS2438_ReadRawRom(rom))
+        uint8_t serial_number[6];
+        if ( DS2438_ReadSerialNumber(serial_number, DS2438_CRC_CHECK) == DS2438_OK)
         {
-            sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", rom[0], rom[1],
-                                                                                    rom[2], rom[3],
-                                                                                    rom[4], rom[5],
-                                                                                    rom[6], rom[7]);
+            sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", serial_number[0], serial_number[1],
+                                                                                serial_number[2], serial_number[3],
+                                                                                serial_number[4], serial_number[5]);
             debug_print(msg);
-            uint8_t serial_number[6];
-            if ( DS2438_ReadSerialNumber(serial_number, DS2438_CRC_CHECK) == DS2438_OK)
-            {
-                sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", serial_number[0], serial_number[1],
-                                                                                    serial_number[2], serial_number[3],
-                                                                                    serial_number[4], serial_number[5]);
-                debug_print(msg);
-            }
-            else
-            {
-                debug_print("CRC Check failed when reading serial number\r\n");
-            }
         }
         else
         {
-            debug_print("Could not read rom in raw mode\r\n");
+            debug_print("CRC Check failed when reading serial number\r\n");
         }
     }
     else
@@ -73,89 +58,42 @@ int main(void)
         debug_print("Could not find device\r\n");
     }
     
-    DS2438_StartTemperatureConversion();
-    CyDelay(100);
-    for (uint8_t page = 0; page < 8; page++)
-    {
-        uint8_t page_data[9];
-        if( DS2438_ReadPage(page, page_data) == DS2438_OK )
-        {
-            sprintf(msg, "Read page %d\r\n", page);
-            debug_print(msg);
-            sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", page_data[0],
-                                                                                                page_data[1],
-                                                                                                page_data[2],
-                                                                                                page_data[3],
-                                                                                                page_data[4],
-                                                                                                page_data[5],
-                                                                                                page_data[6],
-                                                                                                page_data[7],
-                                                                                                page_data[8]);
-            debug_print(msg);
-        }
-        else
-        {
-            debug_print("Could not read page data\r\n");
-        }
-        
-    }
+    DS2438_SelectInputSource(DS2438_INPUT_VOLTAGE_VDD, DS2438_NO_CRC_CHECK);
+    
+    float voltage, temperature, current = 0;
     
     for(;;)
     {
-        /* Place your application code here. */
-        if (DS2438_StartTemperatureConversion() == DS2438_OK)
+        
+        if (DS2438_ReadVoltage(&voltage, DS2438_CRC_CHECK) == DS2438_OK)
         {
-            debug_print("Started temperature conversion\r\n");
-            while(DS2438_HasTemperatureData(DS2438_CRC_CHECK) != DS2438_OK);
-            debug_print("Temperature data available\r\n");
-            float temperature;
-            if (DS2438_GetTemperatureData(&temperature, DS2438_CRC_CHECK) == DS2438_OK)
-            {
-                sprintf(msg, "Temp: %d\r\n", (int)(temperature*1000));
-                debug_print(msg);
-            }
-            else
-            {
-                debug_print("Could not read temperature data\r\n");
-            }
+            sprintf(msg, "Voltage: %d\r\n", (int)(voltage*1000));
+            debug_print(msg);
+            
         }
         else
         {
-            debug_print("Could not start temperature conversion\r\n");
+            debug_print("Could not read voltage\r\n");
         }
-        CyDelay(1000);
-        if (DS2438_StartVoltageConversion() == DS2438_OK)
+        
+        if (DS2438_ReadTemperature(&temperature, DS2438_CRC_CHECK) == DS2438_OK)
         {
-            debug_print("Started voltage conversion\r\n");
-            while(DS2438_HasVoltageData(DS2438_CRC_CHECK) != DS2438_OK);
-            debug_print("Voltage data available\r\n");
-            float voltage;
-            if (DS2438_GetVoltageData(&voltage, DS2438_CRC_CHECK) == DS2438_OK)
-            {
-                sprintf(msg, "Volt: %d\r\n", (int)(voltage*1000));
-                debug_print(msg);
-            }
-            else
-            {
-                debug_print("Could not read voltage data\r\n");
-            }
+            sprintf(msg, "Temperature: %d\r\n", (int)(temperature*1000));
+            debug_print(msg);
         }
         else
         {
-            debug_print("Could not start voltage conversion\r\n");
+            debug_print("Could not read temperature\r\n");
         }
-        CyDelay(1000);
-        float current;
         if (DS2438_GetCurrentData(&current, DS2438_CRC_CHECK) == DS2438_OK)
         {
-            debug_print("Current data available\r\n");
             sprintf(msg, "mAmps: %d\r\n", (int)(current*1000));
             debug_print(msg);
             
         }
         else
         {
-            debug_print("Could not start current conversion\r\n");
+            debug_print("Could not read current\r\n");
         }
         CyDelay(1000);
         

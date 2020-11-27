@@ -51,11 +51,17 @@ int main(void)
                                                                                     rom[6], rom[7]);
             debug_print(msg);
             uint8_t serial_number[6];
-            DS2438_ReadSerialNumber(serial_number, DS2438_NO_CRC_CHECK);
-            sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", serial_number[0], serial_number[1],
+            if ( DS2438_ReadSerialNumber(serial_number, DS2438_CRC_CHECK) == DS2438_OK)
+            {
+                sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", serial_number[0], serial_number[1],
                                                                                     serial_number[2], serial_number[3],
                                                                                     serial_number[4], serial_number[5]);
-            debug_print(msg);
+                debug_print(msg);
+            }
+            else
+            {
+                debug_print("CRC Check failed when reading serial number\r\n");
+            }
         }
         else
         {

@@ -15,6 +15,7 @@
     
     #include "cytypes.h"
     #include "OneWire.h"
+    #include "DS2438_Defines.h"
     
     /**
     *   \brief Initializes the DS2438.
@@ -52,11 +53,11 @@
     uint8_t DS2438_ReadRawRom(uint8_t* rom);
     
     /**
-    *   \brief Read 64-bit lasered ROM.
+    *   \brief Read 48-bit Serial Number from ROM.
     *
     *   This function reads the 64-bit lasered ROM of the DS2438
-    *   and returns its content in the array passed in as
-    *   parameter to the function.
+    *   and returns the serial number contained in it 
+    *   in the array passed in as parameter to the function.
     *   \param serial_number pointer to array where raw ROM data will be saved.
     *   \param #DS2438_CRC_CHECK to enable CRC check, #DS2438_NO_CRC_CHECK to disable CRC check
     *   \retval #DS2438_OK if device is present on the bus.

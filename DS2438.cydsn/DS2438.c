@@ -10,7 +10,6 @@
  * ========================================
 */
 #include "DS2438.h"
-#include "DS2438_Commands.h"
 #include "DS2438_Defines.h"
 #include "OneWire.h"
 #include "project.h"
@@ -44,9 +43,7 @@ uint8_t DS2438_ReadSerialNumber(uint8_t* serial_number, uint8_t check)
     {
         if (check == DS2438_CRC_CHECK)
         {
-            uint8_t crc_values[] = {temp_rom[0],temp_rom[1],temp_rom[2],
-                                        temp_rom[3],temp_rom[4],temp_rom[5],temp_rom[6]};
-            uint8_t error = DS2438_CheckCrcValue(crc_values, 7, temp_rom[7]);
+            uint8_t error = DS2438_CheckCrcValue(temp_rom, 7, temp_rom[7]);
             if (error != DS2438_OK)
                 return DS2438_CRC_FAIL;
         }
@@ -402,9 +399,10 @@ uint8_t DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_value)
 
 uint8_t DS2438_ComputeCrc(const uint8_t *data, uint8_t len)
 {
-    // Compute crc according to Dallas specs
-    uint8_t crc = 0;
+	uint8_t crc = 0;
+
 	while (len--) {
+
 		uint8_t inbyte = *data++;
 		for (uint8_t i = 8; i; i--) {
 			uint8_t mix = (crc ^ inbyte) & 0x01;
@@ -414,5 +412,6 @@ uint8_t DS2438_ComputeCrc(const uint8_t *data, uint8_t len)
 		}
 	}
 	return crc;
+
 }
 /* [] END OF FILE */

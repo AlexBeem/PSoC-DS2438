@@ -14,8 +14,7 @@
 #include "OneWire.h"
 #include "project.h"
 
-uint8_t DS2438_ComputeCrc(const uint8_t *data, uint8_t len);
-uint8_t DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_value);
+
 
 uint8_t DS2438_Init(void)
 {
@@ -106,7 +105,7 @@ uint8_t DS2438_StartTemperatureConversion(void)
     return DS2438_DEV_NOT_FOUND;
 }
 
-uint8_t DS2438_HasTemperatureData(void)
+uint8_t DS2438_HasTemperatureData(uint8_t crc_check)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -125,8 +124,30 @@ uint8_t DS2438_HasTemperatureData(void)
             OneWire_WriteByte(DS2438_Pin_0, DS2438_READ_SCRATCHPAD);
             // Page 0
             OneWire_WriteByte(DS2438_Pin_0, 0x00);
-            // Read first byte
-            uint8_t first_byte = OneWire_ReadByte(DS2438_Pin_0);
+            uint8_t first_byte = 0;
+            if (crc_check == DS2438_CRC_CHECK)
+            {
+                // Read all nine bytes of first page
+                uint8_t temp_rom[9];
+                for (uint8_t i = 0; i < 9; i++)
+                {
+                    temp_rom[i] = OneWire_ReadByte(DS2438_Pin_0);
+                }
+                if (DS2438_CheckCrcValue(temp_rom, 8, temp_rom[8]) == DS2438_OK)
+                {
+                    first_byte = temp_rom[0];
+                }
+                else
+                {
+                    return DS2438_CRC_FAIL;
+                }
+            }
+            else
+            {
+                first_byte = OneWire_ReadByte(DS2438_Pin_0);
+            
+            }
+            // Read bit
             if ((first_byte & (0x01 << 4)) == 0)
             {
                 return DS2438_OK;
@@ -142,7 +163,7 @@ uint8_t DS2438_HasTemperatureData(void)
     return DS2438_DEV_NOT_FOUND;
 }
 
-uint8_t DS2438_GetTemperatureData(float* temperature)
+uint8_t DS2438_GetTemperatureData(float* temperature, uint8_t crc_check)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -162,10 +183,17 @@ uint8_t DS2438_GetTemperatureData(float* temperature)
             // Page 0
             OneWire_WriteByte(DS2438_Pin_0, 0x00);
             // Read nine bytes
-            
             uint8_t page_data[9];
             if (DS2438_ReadPage(0x00, page_data) == DS2438_OK)
             {
+                if (crc_check == DS2438_CRC_CHECK)
+                {
+                    if (DS2438_CheckCrcValue(page_data, 8, page_data[8]) != DS2438_OK)
+                    {
+                        return DS2438_CRC_FAIL;
+                    }
+                    
+                }
                 uint8_t temp_lsb = page_data[1];
                 uint8_t temp_msb = page_data[2];
                 *temperature = (((int16_t)temp_msb << 8) | ((temp_lsb & 0xFF) >> 3)) * 0.03125;
@@ -180,7 +208,7 @@ uint8_t DS2438_GetTemperatureData(float* temperature)
     return DS2438_DEV_NOT_FOUND;
 }
 
-uint8_t DS2438_HasVoltageData(void)
+uint8_t DS2438_HasVoltageData(uint8_t crc_check)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -199,8 +227,30 @@ uint8_t DS2438_HasVoltageData(void)
             OneWire_WriteByte(DS2438_Pin_0, DS2438_READ_SCRATCHPAD);
             // Page 0
             OneWire_WriteByte(DS2438_Pin_0, 0x00);
-            // Read first byte
-            uint8_t first_byte = OneWire_ReadByte(DS2438_Pin_0);
+            uint8_t first_byte = 0;
+            if (crc_check == DS2438_CRC_CHECK)
+            {
+                // Read all nine bytes of first page
+                uint8_t temp_rom[9];
+                for (uint8_t i = 0; i < 9; i++)
+                {
+                    temp_rom[i] = OneWire_ReadByte(DS2438_Pin_0);
+                }
+                if (DS2438_CheckCrcValue(temp_rom, 8, temp_rom[8]) == DS2438_OK)
+                {
+                    first_byte = temp_rom[0];
+                }
+                else
+                {
+                    return DS2438_CRC_FAIL;
+                }
+            }
+            else
+            {
+                first_byte = OneWire_ReadByte(DS2438_Pin_0);
+            
+            }
+            // Read bit
             if ((first_byte & (0x01 << 6)) == 0)
             {
                 return DS2438_OK;
@@ -216,7 +266,7 @@ uint8_t DS2438_HasVoltageData(void)
     return DS2438_DEV_NOT_FOUND;
 }
 
-uint8_t DS2438_GetVoltageData(float* voltage)
+uint8_t DS2438_GetVoltageData(float* voltage, uint8_t crc_check)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -240,6 +290,13 @@ uint8_t DS2438_GetVoltageData(float* voltage)
             uint8_t page_data[9];
             if (DS2438_ReadPage(0x00, page_data) == DS2438_OK)
             {
+                if (crc_check == DS2438_CRC_CHECK)
+                {
+                    if (DS2438_CheckCrcValue(page_data, 8, page_data[8]) != DS2438_OK)
+                    {
+                        return DS2438_CRC_FAIL;
+                    }
+                }
                 uint8_t volt_lsb = page_data[3];
                 uint8_t volt_msb = page_data[4];
                 *voltage = ((volt_msb << 8) | ((volt_lsb & 0xFF))) / 100.0;
@@ -249,14 +306,12 @@ uint8_t DS2438_GetVoltageData(float* voltage)
             {
                 return DS2438_ERROR;
             }
-            
         }
     }
-    
     return DS2438_DEV_NOT_FOUND;
 }
 
-uint8_t DS2438_GetCurrentData(float* current)
+uint8_t DS2438_GetCurrentData(float* current, uint8_t crc_check)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -280,6 +335,13 @@ uint8_t DS2438_GetCurrentData(float* current)
             uint8_t page_data[9];
             if (DS2438_ReadPage(0x00, page_data) == DS2438_OK)
             {
+                if (crc_check == DS2438_CRC_CHECK)
+                {
+                    if (DS2438_CheckCrcValue(page_data, 8, page_data[8]) != DS2438_OK)
+                    {
+                        return DS2438_CRC_FAIL;
+                    }
+                }
                 uint8_t curr_lsb = page_data[5];
                 uint8_t curr_msb = page_data[6];
                 int16_t curr_data = 0;
@@ -297,7 +359,7 @@ uint8_t DS2438_GetCurrentData(float* current)
                     curr_data = (curr_msb << 8) | (curr_lsb & 0xFF);
                 }
                 
-                *current = (curr_data) / (4096.*0.05);
+                *current = (curr_data) / (4096.*DS2438_SENSE_RESISTOR);
                 return DS2438_OK;
             }
             else

@@ -71,18 +71,22 @@
     // ===========================================================
     
     uint8_t DS2438_StartVoltageConversion(void);
-    uint8_t DS2438_HasVoltageData(void);
-    uint8_t DS2438_GetVoltageData(float* voltage);
-    uint8_t DS2438_ReadVoltage(void);
+    uint8_t DS2438_HasVoltageData(uint8_t crc_check);
+    uint8_t DS2438_GetVoltageData(float* voltage, uint8_t crc_check);
+    uint8_t DS2438_GetRawVoltageData(uint16_t* voltage, uint8_t crc_check);
+    uint8_t DS2438_ReadVoltage(float* voltage, uint8_t crc_check);
+    uint8_t DS2438_ReadRawVoltage(uint16_t* voltage, uint8_t crc_check);
     
     // ===========================================================
     //                  TEMPERATURE CONVERSION FUNCTIONS
     // ===========================================================
     
     uint8_t DS2438_StartTemperatureConversion(void);
-    uint8_t DS2438_HasTemperatureData(void);
-    uint8_t DS2438_GetTemperatureData(float* temperature);
-    uint8_t DS2438_ReadTemperature(void);
+    uint8_t DS2438_HasTemperatureData(uint8_t crc_check);
+    uint8_t DS2438_GetTemperatureData(float* temperature, uint8_t crc_check);
+    uint8_t DS2438_GetRawTemperatureData(uint16_t* temperature, uint8_t crc_check);
+    uint8_t DS2438_ReadTemperature(float* temperature, uint8_t crc_check);
+    uint8_t DS2438_ReadRawTemperature(uint16_t* temperature, uint8_t crc_check);
     
     // ===========================================================
     //                  CONFIGURATION FUNCTIONS
@@ -96,13 +100,15 @@
     // ===========================================================
     //              CURRENT AND ACCUMULATORS FUNCTIONS
     // ===========================================================
-    uint8_t DS2438_GetCurrentData(float* current);
+    uint8_t DS2438_GetCurrentData(float* current, uint8_t crc_check);
 
     // ===========================================================
     //                  LOW LEVEL UNCTIONS
     // ===========================================================
     uint8_t DS2438_ReadPage(uint8_t page_number, uint8_t* page_data);
-    
+    uint8_t DS2438_ComputeCrc(const uint8_t *data, uint8_t len);
+    uint8_t DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_value);
+
 #endif
 
 /* [] END OF FILE */

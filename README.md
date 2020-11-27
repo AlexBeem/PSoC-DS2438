@@ -4,6 +4,7 @@ This repository contains the code required to interface a PSoC 5 LP microcontrol
 ### Documentation Status
 [![Docs Status](https://travis-ci.com/dado93/PSoC-DS2438.svg?branch=main)](https://travis-ci.com/dado93/PSoC-DS2438.svg?branch=main)
 
+Documentation can be found at (https://dado93.github.io/PSoC-DS2438/)[https://dado93.github.io/PSoC-DS2438/]
 
 ## Setup
 My current setup for testing purposes is based on a custom PCB which I designed. On this PCB I've placed a [CY8CKIT-059](https://www.cypress.com/documentation/development-kitsboards/cy8ckit-059-psoc-5lp-prototyping-kit-onboard-programmer-and) PSoC 5LP prototyping kit and a [DS2438](https://www.maximintegrated.com/en/products/power/battery-management/DS2438.html). The PCB is powered from a LiPo battery, and the DS2438 is used to monitor the battery status.

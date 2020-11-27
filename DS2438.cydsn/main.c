@@ -51,11 +51,17 @@ int main(void)
                                                                                     rom[6], rom[7]);
             debug_print(msg);
             uint8_t serial_number[6];
-            DS2438_ReadSerialNumber(serial_number, DS2438_NO_CRC_CHECK);
-            sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", serial_number[0], serial_number[1],
+            if ( DS2438_ReadSerialNumber(serial_number, DS2438_CRC_CHECK) == DS2438_OK)
+            {
+                sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", serial_number[0], serial_number[1],
                                                                                     serial_number[2], serial_number[3],
                                                                                     serial_number[4], serial_number[5]);
-            debug_print(msg);
+                debug_print(msg);
+            }
+            else
+            {
+                debug_print("CRC Check failed when reading serial number\r\n");
+            }
         }
         else
         {
@@ -93,16 +99,17 @@ int main(void)
         }
         
     }
+    
     for(;;)
     {
         /* Place your application code here. */
         if (DS2438_StartTemperatureConversion() == DS2438_OK)
         {
             debug_print("Started temperature conversion\r\n");
-            while(DS2438_HasTemperatureData() != DS2438_OK);
+            while(DS2438_HasTemperatureData(DS2438_CRC_CHECK) != DS2438_OK);
             debug_print("Temperature data available\r\n");
             float temperature;
-            if (DS2438_GetTemperatureData(&temperature) == DS2438_OK)
+            if (DS2438_GetTemperatureData(&temperature, DS2438_CRC_CHECK) == DS2438_OK)
             {
                 sprintf(msg, "Temp: %d\r\n", (int)(temperature*1000));
                 debug_print(msg);
@@ -120,10 +127,10 @@ int main(void)
         if (DS2438_StartVoltageConversion() == DS2438_OK)
         {
             debug_print("Started voltage conversion\r\n");
-            while(DS2438_HasVoltageData() != DS2438_OK);
+            while(DS2438_HasVoltageData(DS2438_CRC_CHECK) != DS2438_OK);
             debug_print("Voltage data available\r\n");
             float voltage;
-            if (DS2438_GetVoltageData(&voltage) == DS2438_OK)
+            if (DS2438_GetVoltageData(&voltage, DS2438_CRC_CHECK) == DS2438_OK)
             {
                 sprintf(msg, "Volt: %d\r\n", (int)(voltage*1000));
                 debug_print(msg);
@@ -139,7 +146,7 @@ int main(void)
         }
         CyDelay(1000);
         float current;
-        if (DS2438_GetCurrentData(&current) == DS2438_OK)
+        if (DS2438_GetCurrentData(&current, DS2438_CRC_CHECK) == DS2438_OK)
         {
             debug_print("Current data available\r\n");
             sprintf(msg, "mAmps: %d\r\n", (int)(current*1000));

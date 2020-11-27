@@ -11,18 +11,19 @@
 */
 #include "DS2438.h"
 #include "DS2438_Commands.h"
+#include "DS2438_Defines.h"
 #include "OneWire.h"
 #include "project.h"
 
 uint8_t DS2438_ComputeCrc(const uint8_t *data, uint8_t len);
-DS2438_ErrorCode DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_value);
+uint8_t DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_value);
 
-DS2438_ErrorCode DS2438_Init(void)
+uint8_t DS2438_Init(void)
 {
     return DS2438_OK;
 }
 
-DS2438_ErrorCode DS2438_DevIsPresent(void)
+uint8_t DS2438_DevIsPresent(void)
 {
     // check if device is present on the bus
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -35,7 +36,7 @@ DS2438_ErrorCode DS2438_DevIsPresent(void)
     }
 }
 
-DS2438_ErrorCode DS2438_ReadSerialNumber(uint8_t* serial_number, DS2438_CrcCheck check)
+uint8_t DS2438_ReadSerialNumber(uint8_t* serial_number, uint8_t check)
 {
     // read rom and get serial number only
     uint8_t temp_rom[8];
@@ -45,7 +46,7 @@ DS2438_ErrorCode DS2438_ReadSerialNumber(uint8_t* serial_number, DS2438_CrcCheck
         {
             uint8_t crc_values[] = {temp_rom[0],temp_rom[1],temp_rom[2],
                                         temp_rom[3],temp_rom[4],temp_rom[5],temp_rom[6]};
-            DS2438_ErrorCode error = DS2438_CheckCrcValue(crc_values, 7, temp_rom[7]);
+            uint8_t error = DS2438_CheckCrcValue(crc_values, 7, temp_rom[7]);
             if (error != DS2438_OK)
                 return DS2438_CRC_FAIL;
         }
@@ -61,7 +62,7 @@ DS2438_ErrorCode DS2438_ReadSerialNumber(uint8_t* serial_number, DS2438_CrcCheck
     return DS2438_DEV_NOT_FOUND;
 }
 
-DS2438_ErrorCode DS2438_ReadRawRom(uint8_t* rom)
+uint8_t DS2438_ReadRawRom(uint8_t* rom)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -79,7 +80,7 @@ DS2438_ErrorCode DS2438_ReadRawRom(uint8_t* rom)
     return DS2438_DEV_NOT_FOUND;
 }
 
-DS2438_ErrorCode DS2438_StartVoltageConversion(void)
+uint8_t DS2438_StartVoltageConversion(void)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -94,7 +95,7 @@ DS2438_ErrorCode DS2438_StartVoltageConversion(void)
     
 }
 
-DS2438_ErrorCode DS2438_StartTemperatureConversion(void)
+uint8_t DS2438_StartTemperatureConversion(void)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -108,7 +109,7 @@ DS2438_ErrorCode DS2438_StartTemperatureConversion(void)
     return DS2438_DEV_NOT_FOUND;
 }
 
-DS2438_ErrorCode DS2438_HasTemperatureData(void)
+uint8_t DS2438_HasTemperatureData(void)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -144,7 +145,7 @@ DS2438_ErrorCode DS2438_HasTemperatureData(void)
     return DS2438_DEV_NOT_FOUND;
 }
 
-DS2438_ErrorCode DS2438_GetTemperatureData(float* temperature)
+uint8_t DS2438_GetTemperatureData(float* temperature)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -182,7 +183,7 @@ DS2438_ErrorCode DS2438_GetTemperatureData(float* temperature)
     return DS2438_DEV_NOT_FOUND;
 }
 
-DS2438_ErrorCode DS2438_HasVoltageData(void)
+uint8_t DS2438_HasVoltageData(void)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -218,7 +219,7 @@ DS2438_ErrorCode DS2438_HasVoltageData(void)
     return DS2438_DEV_NOT_FOUND;
 }
 
-DS2438_ErrorCode DS2438_GetVoltageData(float* voltage)
+uint8_t DS2438_GetVoltageData(float* voltage)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -258,7 +259,7 @@ DS2438_ErrorCode DS2438_GetVoltageData(float* voltage)
     return DS2438_DEV_NOT_FOUND;
 }
 
-DS2438_ErrorCode DS2438_GetCurrentData(float* current)
+uint8_t DS2438_GetCurrentData(float* current)
 {
     // Reset sequence
     if (OneWire_TouchReset(DS2438_Pin_0) == 0)
@@ -313,7 +314,7 @@ DS2438_ErrorCode DS2438_GetCurrentData(float* current)
     return DS2438_DEV_NOT_FOUND;
 }
 
-DS2438_ErrorCode DS2438_ReadPage(uint8_t page_number, uint8_t* page_data)
+uint8_t DS2438_ReadPage(uint8_t page_number, uint8_t* page_data)
 {
     if (page_number > 0x07)
         return DS2438_ERROR;
@@ -349,7 +350,7 @@ DS2438_ErrorCode DS2438_ReadPage(uint8_t page_number, uint8_t* page_data)
     return DS2438_ERROR;
 }
 
-DS2438_ErrorCode DS2438_WritePage(uint8_t page_number, uint8_t* page_data)
+uint8_t DS2438_WritePage(uint8_t page_number, uint8_t* page_data)
 {
     if (page_number > 0x07)
         return DS2438_ERROR;
@@ -386,7 +387,7 @@ DS2438_ErrorCode DS2438_WritePage(uint8_t page_number, uint8_t* page_data)
 }
 
 
-DS2438_ErrorCode DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_value)
+uint8_t DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_value)
 {
     uint8_t computed_crc = DS2438_ComputeCrc(data, len);
     if (computed_crc == crc_value)

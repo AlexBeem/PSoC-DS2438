@@ -2,7 +2,7 @@
 This repository contains the code required to interface a PSoC 5 LP microcontroller to a DS2438 Smart Battery Monitor. 
 
 ### Documentation Status
-[![Docs Status](https://travis-ci.org/dado93/PSoC-DS2438.svg?branch=main)](https://travis-ci.org/dado93/PSoC-DS2438.svg?branch=main)
+[![Docs Status](https://travis-ci.com/dado93/PSoC-DS2438.svg?branch=main)](https://travis-ci.com/dado93/PSoC-DS2438.svg?branch=main)
 
 
 ## Setup

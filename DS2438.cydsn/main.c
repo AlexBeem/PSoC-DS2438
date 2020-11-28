@@ -37,6 +37,9 @@ int main(void)
 
     char msg[50];
     DS2438_Init();
+    DS2438_EnableIAD();
+    DS2438_EnableCA();
+    DS2438_EnableShadowEE();
     
     if (DS2438_DevIsPresent() == DS2438_OK)
     {
@@ -52,6 +55,17 @@ int main(void)
         {
             debug_print("CRC Check failed when reading serial number\r\n");
         }
+        
+        for (uint8_t page = 0; page < 7; page++)
+        {
+           uint8_t page_data[9];
+            DS2438_ReadPage(page, page_data);    
+            sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", page_data[0], page_data[1],
+                                                                                page_data[2], page_data[3],
+                                                                                page_data[4], page_data[5],
+                                                                                page_data[6], page_data[7]);
+            debug_print(msg);
+        }
     }
     else
     {
@@ -59,8 +73,20 @@ int main(void)
     }
     
     DS2438_SelectInputSource(DS2438_INPUT_VOLTAGE_VDD, DS2438_NO_CRC_CHECK);
-    
-    float voltage, temperature, current = 0;
+    DS2438_EnableIAD();
+    DS2438_EnableCA();
+    DS2438_EnableShadowEE();
+    for (uint8_t page = 0; page < 7; page++)
+    {
+       uint8_t page_data[9];
+        DS2438_ReadPage(page, page_data);    
+        sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", page_data[0], page_data[1],
+                                                                            page_data[2], page_data[3],
+                                                                            page_data[4], page_data[5],
+                                                                            page_data[6], page_data[7]);
+        debug_print(msg);
+    }
+    float voltage, temperature, current, capacity = 0;
     
     for(;;)
     {
@@ -94,6 +120,26 @@ int main(void)
         else
         {
             debug_print("Could not read current\r\n");
+        }
+        if (DS2438_GetCapacity(&capacity, DS2438_CRC_CHECK) == DS2438_OK)
+        {
+            sprintf(msg, "Capacity: %d\r\n", (int)(capacity*1000));
+            debug_print(msg);
+            
+        }
+        else
+        {
+            debug_print("Could not read current\r\n");
+        }
+        for (uint8_t page = 0; page < 7; page++)
+        {
+           uint8_t page_data[9];
+            DS2438_ReadPage(page, page_data);    
+            sprintf(msg, "0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X 0x%02X\r\n", page_data[0], page_data[1],
+                                                                                page_data[2], page_data[3],
+                                                                                page_data[4], page_data[5],
+                                                                                page_data[6], page_data[7]);
+            debug_print(msg);
         }
         CyDelay(1000);
         

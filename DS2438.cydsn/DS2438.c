@@ -38,24 +38,18 @@ uint8_t DS2438_ReadSerialNumber(uint8_t* serial_number, uint8_t crc_check)
 {
     // read rom and get serial number only
     uint8_t temp_rom[8];
-    if (DS2438_ReadRawRom(temp_rom, crc_check) == DS2438_OK)
+    uint8_t error = DS2438_ReadRawRom(temp_rom, crc_check);
+    if (error == DS2438_OK)
     {
-        if (crc_check == DS2438_CRC_CHECK)
-        {
-            uint8_t error = DS2438_CheckCrcValue(temp_rom, 7, temp_rom[7]);
-            if (error != DS2438_OK)
-                return DS2438_CRC_FAIL;
-        }
-        
+        // get serial data
         serial_number[0] = temp_rom[1];
         serial_number[1] = temp_rom[2];
         serial_number[2] = temp_rom[3];
         serial_number[3] = temp_rom[4];
         serial_number[4] = temp_rom[5];
         serial_number[5] = temp_rom[6];
-        return DS2438_OK;
     }
-    return DS2438_DEV_NOT_FOUND;
+    return error;
 }
 
 uint8_t DS2438_ReadRawRom(uint8_t* rom, uint8_t crc_check)
@@ -370,6 +364,7 @@ uint8_t DS2438_ReadRawTemperature(uint16_t* temperature, uint8_t crc_check)
 //             CURRENT AND ACCUMULATOR FUNCTIONS
 // ===========================================================
 
+// Get current data in float format
 uint8_t DS2438_GetCurrentData(float* current, uint8_t crc_check)
 {
     uint8_t page_data[9];
@@ -409,10 +404,218 @@ uint8_t DS2438_GetCurrentData(float* current, uint8_t crc_check)
     return DS2438_DEV_NOT_FOUND;
 }
 
+// Get current data in raw format
+uint8_t DS2438_GetRawCurrentData(uint16_t* current, uint8_t crc_check)
+{
+    uint8_t page_data[9];
+    if (DS2438_ReadPage(0x00, page_data) == DS2438_OK)
+    {
+        if (crc_check == DS2438_CRC_CHECK)
+        {
+            if (DS2438_CheckCrcValue(page_data, 8, page_data[8]) != DS2438_OK)
+            {
+                return DS2438_CRC_FAIL;
+            }
+        }
+        uint8_t curr_lsb = page_data[5];
+        uint8_t curr_msb = page_data[6];
+        int16_t curr_data = 0;
+        
+        *current = (curr_msb << 8) | (curr_lsb & 0xFF);
+        return DS2438_OK;
+    }
+    else
+    {
+        return DS2438_ERROR;
+    }    
+    return DS2438_DEV_NOT_FOUND;
+}
+
+// Get value of integrated current accumalator
+uint8_t DS2438_GetICA(uint8_t* ica, uint8_t crc_check)
+{
+    // Read byte 4 of page 1
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x01, page_data);
+    if (error == DS2438_OK)
+    {
+        if (crc_check == DS2438_CRC_CHECK)
+        {
+            if (DS2438_CheckCrcValue(page_data, 8, page_data[8]) != DS2438_OK)
+            {
+                return DS2438_CRC_FAIL;
+            }  
+        }
+        *ica = page_data[4];
+        
+    }   
+    return error;
+}
+
+uint8_t DS2438_GetCapacity(float* capacity, uint8_t crc_check)
+{
+    uint8_t error = DS2438_OK;
+    uint8_t ica = 0;
+    error = DS2438_GetICA(&ica, crc_check);
+    if (error == DS2438_OK)
+    {
+        *capacity = ica/(2048.0*DS2438_SENSE_RESISTOR);
+    }
+    return error;
+}
+
+// Read current threshold value
+uint8_t DS2438_ReadThreshold(uint8_t* threshold, uint8_t crc_check)
+{
+    // Threshold is located at byte 7 of page 0
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x00, page_data);
+    if ( error == DS2438_OK)
+    {
+            if (crc_check == DS2438_CRC_CHECK)
+        {
+            if (DS2438_CheckCrcValue(page_data, 8, page_data[8]) != DS2438_OK)
+                return DS2438_CRC_FAIL;
+        }
+        // Return two MSBs
+        *threshold = page_data[7] >> 6;
+    }
+    return error;
+}
+
+// Write current threshold value
+uint8_t DS2438_WriteThreshold(uint8_t threshold)
+{
+    if (threshold > 3)
+        return DS2438_BAD_PARAM;
+    // Threshold is located at byte 7 of page 0
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x00, page_data);
+    if ( error == DS2438_OK)
+    {
+        
+        // Stop IAD 
+        if (page_data[0] | 0x01)
+        {
+            DS2438_DisableIAD();
+        }
+        
+        // Update threshold bits
+        page_data[7] = threshold << 6;
+        // Write new page data
+        DS2438_WritePage(0x00, page_data);
+    }
+    return error;
+}
+
+// Enable current measurement and ICA
+uint8_t DS2438_EnableIAD(void)
+{
+    // Set bit 0 in byte 0 of page 0
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x00, page_data);
+    if (error == DS2438_OK)
+    {
+        // set bit 0
+        page_data[0] = page_data[0] | 0x01;
+        return DS2438_WritePage(0x00, page_data);
+    }
+    return error;
+}
+
+uint8_t DS2438_DisableIAD(void)
+{
+    // Clear bit 0 in byte 0 of page 0
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x00, page_data);
+    if (error == DS2438_OK)
+    {
+        // Clear bit 0
+        page_data[0] = page_data[0] & (~0x01);
+        return DS2438_WritePage(0x00, page_data);
+    }
+    return error;
+}
+
+uint8_t DS2438_EnableCA(void)
+{
+    // Set bit 1 in byte 0 of page 0
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x00, page_data);
+    if (error == DS2438_OK)
+    {
+        // set bit 0
+        page_data[0] = page_data[0] | 0x02;
+        return DS2438_WritePage(0x00, page_data);
+    }
+    return error;
+    
+}
+
+uint8_t DS2438_DisableCA(void)
+{
+    // Clear bit 1 in byte 0 of page 0
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x00, page_data);
+    if (error == DS2438_OK)
+    {
+        // Clear bit 0
+        page_data[0] = page_data[0] & (~0x02);
+        return DS2438_WritePage(0x00, page_data);
+    }
+    return error;
+}
+
+uint8_t DS2438_EnableShadowEE(void)
+{
+    // Set bit 2 in byte 0 of page 0
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x00, page_data);
+    if (error == DS2438_OK)
+    {
+        // set bit 2
+        page_data[0] = page_data[0] | 0x04;
+        return DS2438_WritePage(0x00, page_data);
+    }
+    return error;
+}
+
+
+uint8_t DS2438_DisableShadowEE(void)
+{
+    // Clear bit 2 in byte 0 of page 0
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x00, page_data);
+    if (error == DS2438_OK)
+    {
+        // Clear bit 2
+        page_data[0] = page_data[0] & (~0x04);
+        return DS2438_WritePage(0x00, page_data);
+    }
+    return error;
+}
+
+uint8_t DS2438_CopyInProgress(uint8_t* copy)
+{
+     // Read bit 5 in byte 0 of page 0
+    uint8_t page_data[9];
+    uint8_t error = DS2438_ReadPage(0x00, page_data);
+    if (error == DS2438_OK)
+    {
+        *copy = page_data[0] & 0x20;
+    }
+    return error;
+}
+
+    
+// ===========================================================
+//                    LOW LEVEL FUNCTIONS
+// ===========================================================
+// Read one page of data
 uint8_t DS2438_ReadPage(uint8_t page_number, uint8_t* page_data)
 {
     if (page_number > 0x07)
-        return DS2438_ERROR;
+        return DS2438_BAD_PARAM;
     else
     {
         // Reset sequence
@@ -445,10 +648,11 @@ uint8_t DS2438_ReadPage(uint8_t page_number, uint8_t* page_data)
     return DS2438_DEV_NOT_FOUND;
 }
 
+// Write one page of data
 uint8_t DS2438_WritePage(uint8_t page_number, uint8_t* page_data)
 {
     if (page_number > 0x07)
-        return DS2438_ERROR;
+        return DS2438_BAD_PARAM;
     else
     {
         // Reset sequence
@@ -479,7 +683,7 @@ uint8_t DS2438_WritePage(uint8_t page_number, uint8_t* page_data)
     return DS2438_DEV_NOT_FOUND;
 }
 
-
+// Check if retrieved CRC value is equal to the computed one
 uint8_t DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_value)
 {
     uint8_t computed_crc = DS2438_ComputeCrc(data, len);
@@ -493,6 +697,7 @@ uint8_t DS2438_CheckCrcValue(uint8_t* data, uint8_t len, uint8_t crc_value)
     }
 }
 
+// Compute CRC value
 uint8_t DS2438_ComputeCrc(const uint8_t *data, uint8_t len)
 {
 	uint8_t crc = 0;

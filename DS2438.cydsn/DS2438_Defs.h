@@ -18,7 +18,7 @@
     /**
     *   \brief Enable CRC check when reading from scratchpad.
     */
-    #define DS2438_CRC_CHECK        0       ///< Perform CRC Check
+    #define DS2438_DO_CRC_CHECK     0       ///< Perform CRC Check
     
     /**
     *   \brief Disbale CRC check when reading from scratchpad.

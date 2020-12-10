@@ -15,7 +15,7 @@
     
     #include "cytypes.h"
     #include "OneWire.h"
-    #include "DS2438_Defs.h"
+    #include "DS2438_Defines.h"
     
     // ===========================================================
     //                 INITIALIZATION FUNCTIONS

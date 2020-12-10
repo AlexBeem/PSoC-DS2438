@@ -20,12 +20,12 @@
     /**
     *   \brief Initializes the DS2438.
     *
-    *   This function initializes the device by checking that
+    *   This function starts the device by checking that
     *   the DS2438 is present on the 1-Wire bus.
     *   \retval #DS2438_OK if device is present on the bus.
     *   \retval #DS2438_DEV_NOT_FOUND if device is not present on the bus.
     */
-    uint8_t DS2438_Init(void);
+    uint8_t DS2438_Start(void);
     
     /**
     *   \brief Check that the DS2438 is present on the bus.
@@ -150,7 +150,9 @@
     *   \brief Select input source for A/D conversion.
     *
     *   This function sets the input source for the A/D conversion of the DS2438.
-    *   \param input_source #DS2438_INPUT_VDD for battery input, #DS2438_INPUT_VAD for VAD pin.
+    *   \param input_source selection of AD voltage source:
+    *       - #DS2438_INPUT_VOLTAGE_VDD for battery input
+    *       - #DS2438_INPUT_VAD for VAD pin
     *   \param crc_check #DS2438_CRC_CHECK to enable CRC check, #DS2438_NO_CRC_CHECK to disable CRC check
     *   \retval #DS2438_OK if device is present on the bus.
     *   \retval #DS2438_DEV_NOT_FOUND if device is not present on the bus.
@@ -250,7 +252,7 @@
     *   means that the battery is being charged, while a negative current
     *   means that current is flowing out of the battery. In order to correctly
     *   convert the current value from raw to float format, the true value of
-    *   the sense resistor must be set in the #DS2347_SENSE_RESISTOR macro.
+    *   the sense resistor must be set in the #DS2348_SENSE_RESISTOR macro.
     *   \param current pointer to variable where voltage data will be stored.
     *   \param crc_check #DS2438_CRC_CHECK to enable CRC check, #DS2438_NO_CRC_CHECK to disable CRC check
     *   \retval #DS2438_OK if device is present on the bus.

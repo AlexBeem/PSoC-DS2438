@@ -25,7 +25,7 @@
     *   \retval #DS2438_OK if device is present on the bus.
     *   \retval #DS2438_DEV_NOT_FOUND if device is not present on the bus.
     */
-    uint8_t DS2438_Init(void);
+    uint8_t DS2438_Start(void);
     
     /**
     *   \brief Check that the DS2438 is present on the bus.

@@ -10,11 +10,8 @@
  * ========================================
 */
 #include "DS2438.h"
-#include "DS2438_Defines.h"
 #include "OneWire.h"
 #include "project.h"
-
-
 
 uint8_t DS2438_Init(void)
 {

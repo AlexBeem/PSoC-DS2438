@@ -1,5 +1,5 @@
 /**
- *  \file DS2438_Defines.h
+ *  \file DS2438_Defs.h
  *  \brief Defines and commands for the DS2438 Library.
  *
  * This header file defines all the commands that need to be
